@@ -13,10 +13,10 @@ def karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni):
 		for key in list(yeniOzetDict.keys()):
 			if key in list(eskiOzetDict.keys()):
 				if eskiOzetDict[key] != yeniOzetDict[key]:
-					print("Bu dosyanın içeriği değişmiş -->\n"+key)
+					print("Bu dosyanın içeriği değişmiş -->"+key)
 			else:
-				print("Yeni eklenen dosya var -->"+key)
-		print("Karsilastirma işlemi bitti.Dosyalarınızda bir değişiklik görünmüyor.\n")
+				print("\nYeni eklenen dosya var -->"+key)
+		print("Karsilastirma işlemi bitti.\n")
 	else:
 		print("Dosya özeti oluşturuldu. Eski dosya özetiyle karşılaştırma yapmak için programı yeniden çalıştırın.")
 def getEskiOzet(eskiSozlukYolu):
@@ -43,10 +43,9 @@ def getDizinYolu(baslangicDizinYolu):
 			tempYol+=yol[i]
 	print("---------------------")
 	baslangicDizinYolu+=tempYol
-	#print("baslangicDizinYolu" + baslangicDizinYolu)
 	for subdir in os.listdir(baslangicDizinYolu):
 		subDir.append(subdir)
-	dondur = (baslangicDizinYolu+"/"+subDir[1])
+	dondur = (baslangicDizinYolu+"/"+subDir[1]) # ..
 	return dondur
 	
 def getSha1(filePath):
@@ -58,66 +57,75 @@ def getSha1(filePath):
         return m.hexdigest()
     else:
         print ("File Not Found")
-        
-ozetYolu = r"/home/neslihan/Masaüstü/ozetdosyasi"
-ozetYolu2 = r"/home/neslihan/Masaüstü/sozlukdosyasieski"
-baslangicDizinYolu = r"/run/user/1000/gvfs/"
+ 
+maindir = os.getcwd() 
+programKlasoruPath = maindir+r"/SumMyPhone" #ozetlerin tutulacagi konum
+if((os.path.isdir(programKlasoruPath))==False): #uygulama ilk defa calistiriliyorsa ya da boyle bir dizin yoksa olustur
+	os.mkdir(programKlasoruPath)
+	print("SumMyPhone uygulamasına ait dizin oluşturuldu..") 
+print(programKlasoruPath)      
+ozetYolu = programKlasoruPath+r"/ozetdosyasi"
+ozetYolu2 = programKlasoruPath+r"/sozlukdosyasieski"
+baslangicDizinYolu = r"/run/user/1000/gvfs/" #Linux tabanli bilgisayarlarda usb baglantilari bu dizin altinda gozukuyor
 try:
 	subDirSha1 = str(getDizinYolu(baslangicDizinYolu))
-	dizinYolu = subDirSha1+"/Android/data"
+	dizinYolu = subDirSha1+"/Android/data" #Baglanan cihazın Android/data klasorundeki dosyalariyla ilgileniliyor
 	#print("dizinYolu "+dizinYolu)
 except Exception as e:
+	print(e)
 	print("USB baglantisini kontrol edin !")
 	dizinYolu = ""
+	exit() #usb baglantisi gerceklesmedigi icin uygulama kapatildi.
 
 print("Özet alma basladi, lütfen usb bağlantısını çıkarmayın..")
-i=0
+i=0 #terminal ekraninda ilerlemenin gozlemlenmesi icin sayac
 try:
-	sozlukYoluYeni,sozlukYoluEski = "",""
-	if(os.path.isfile(ozetYolu2)) == True:
-		sozlukYoluEski = r"/home/neslihan/Masaüstü/sozlukdosyasieski"
-		ozetYolu2 = r"/home/neslihan/Masaüstü/sozlukdosyasiyeni"
-		sozlukYoluYeni = ozetYolu2
-		sozlukdosya = open(ozetYolu2,"w")
-		sozlukdosya.write("{")
+	sozlukYoluYeni,sozlukYoluEski = "","" #ozetlerin eklenecegi dosyanin yollari
+	if(os.path.isfile(ozetYolu2)) == True: #onceden ozet alinmis ise 
+		sozlukYoluEski = programKlasoruPath+r"/sozlukdosyasieski"
+		ozetYolu2 = programKlasoruPath+r"/sozlukdosyasiyeni" # yeni ozetler bu konuma kaydedilecek
+		sozlukYoluYeni = ozetYolu2 #karsilastirmaBaslat fonksiyonuna parametre olarak gidecek
+		sozlukdosya = open(ozetYolu2,"w") # yeni ozetleri kaydetmek icin dosya aciliyor
+		sozlukdosya.write("{") #dosyaya veriler dictionary yapisinda kaydediliyor.Bu sebeple dictionary takilari ekleniyor
 		sozlukdosya.close()
 	else:
-		sozlukdosya = open(ozetYolu2,"a")
-		sozlukdosya.write("{")
+		sozlukdosya = open(ozetYolu2,"a") #program ilk defa calistiriliyorsa ilk ozet dosyası olusturulacak demektir
+		sozlukdosya.write("{") #dictionary yapısı icin gerekli taki
 		sozlukdosya.close()
-	j = 0
-	for root, dirs, files in os.walk(dizinYolu, topdown=False):
-		print(i) # Progres bar gerekiyor
+	j = 0 # j degiskeni dictionary takilarinda kontrol icin gerekli
+	for root, dirs, files in os.walk(dizinYolu, topdown=False): #ozet almak icin data klasorunun icinde dolasiliyor
+		print(i) # Progres bar yapilabilir
 		i=i+1
 		yazilacak=""
 		for name in files:
-			yol = os.path.join(root, name)
+			yol = os.path.join(root, name) #dosyanin tam yolu alindi
 			try:
-				ozet = getSha1(yol)
-			except Exception as e:
-				ozet = "Okunamayan dosya turu"
-			finally:
-				kaydedilecekyol = yol[len(dizinYolu):]				
-				sozlukdosya = open(ozetYolu2,"a")
-				dosyaadi = name
-				if (j==0):
+				ozet = getSha1(yol) #dosyanin tam yolu getSha1() fonksiyonuna gonderilerek ozeti alindi
+			except Exception as e: #sha1 kutuphanesinin desteklemedigi turde bir dosya turu var ise exception olusuyor
+				print("Bu dosya okunamıyor") #programin durmaması icin kullaniciya bildiriliyor
+				ozet = "Okunamayan dosya turu" #okunamayan dosya turu de ozet dosyamiza bu sekilde kaydedilecek
+			finally:# ne olursa olsun yapilacak islemler
+				kaydedilecekyol = yol[len(dizinYolu):]	#kaydedilecekyol degiskeni dosyanın tam yolunu yazmamak icin kullanilmistir			
+				sozlukdosya = open(ozetYolu2,"a") #her bir dosyanin ozeti buraya yazilacaktir
+				#dosyaadi = name # gerekli mi ?
+				if (j==0):#dictionary yapisi oldugu icin ilk eklemede ',' eklenmemesi lazim. Kontrol yapiliyor
 					j = j+1
 					sozlukyazilacak = "\""+kaydedilecekyol+"\":\""+ozet+"\"\n"
 				else:
-					sozlukyazilacak = ",\""+kaydedilecekyol+"\":\""+ozet+"\"\n"				
+					sozlukyazilacak = ",\""+kaydedilecekyol+"\":\""+ozet+"\"\n"	#dictionary yapisinda sozlukyazilacak degiskenine yazildi			
 				sozlukdosya.write(sozlukyazilacak)
 				sozlukdosya.close()
 	
 
 except Exception as e:
 	print(e)
-finally:
+finally:#butun yazma islemleri bitince dictionary yapisindan dolayi takilar eklenir
 	sozlukdosya = open(ozetYolu2,"a")
 	sozlukdosya.write("}")
 	sozlukdosya.close()
 	print("Ozet Alma İşlemi Bitti..")
 	
-karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni)
+karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni) #karsilastirma islemi baslatilir
 
 
 
