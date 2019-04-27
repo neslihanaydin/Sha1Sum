@@ -4,6 +4,21 @@ import os
 import codecs
 import subprocess
 
+def getEskiOzet(eskiSozlukYolu):
+	if os.path.exists(eskiSozlukYolu):
+		with open(eskiSozlukYolu, "r") as dosya:
+			sozlukString = (dosya.read())
+		sozlukStringToDict = json.loads(str(sozlukString))
+		return sozlukStringToDict
+	return null
+def getYeniOzet(yeniSozlukYolu):
+	if os.path.exists(yeniSozlukYolu):
+		with open(yeniSozlukYolu, "r") as dosya:
+			sozlukString = (dosya.read())
+		sozlukStringToDict = json.loads(str(sozlukString))
+		return sozlukStringToDict
+	return null
+	
 def getDizinYolu(baslangicDizinYolu):
 	subDir=[]
 	yol = subprocess.check_output(["ls",baslangicDizinYolu])
