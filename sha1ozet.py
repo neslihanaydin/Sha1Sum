@@ -3,7 +3,22 @@ import sys
 import os
 import codecs
 import subprocess
+import json
 
+def karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni):
+	if(sozlukYoluEski != "" and sozlukYoluYeni != ""):
+		print("-------------Karşılaştırma İşlemi Başlatılıyor------------------")
+		eskiOzetDict = getEskiOzet(sozlukYoluEski)
+		yeniOzetDict = getYeniOzet(sozlukYoluYeni)
+		for key in list(yeniOzetDict.keys()):
+			if key in list(eskiOzetDict.keys()):
+				if eskiOzetDict[key] != yeniOzetDict[key]:
+					print("Bu dosyanın içeriği değişmiş -->\n"+key)
+			else:
+				print("Yeni eklenen dosya var -->"+key)
+		print("Karsilastirma işlemi bitti.Dosyalarınızda bir değişiklik görünmüyor.\n")
+	else:
+		print("Dosya özeti oluşturuldu. Eski dosya özetiyle karşılaştırma yapmak için programı yeniden çalıştırın.")
 def getEskiOzet(eskiSozlukYolu):
 	if os.path.exists(eskiSozlukYolu):
 		with open(eskiSozlukYolu, "r") as dosya:
@@ -18,7 +33,6 @@ def getYeniOzet(yeniSozlukYolu):
 		sozlukStringToDict = json.loads(str(sozlukString))
 		return sozlukStringToDict
 	return null
-	
 def getDizinYolu(baslangicDizinYolu):
 	subDir=[]
 	yol = subprocess.check_output(["ls",baslangicDizinYolu])
@@ -35,9 +49,6 @@ def getDizinYolu(baslangicDizinYolu):
 	dondur = (baslangicDizinYolu+"/"+subDir[1])
 	return dondur
 	
-
-	
-
 def getSha1(filePath):
     m = sha1()
     if os.path.exists(filePath):
@@ -49,10 +60,7 @@ def getSha1(filePath):
         print ("File Not Found")
         
 ozetYolu = r"/home/neslihan/Masaüstü/ozetdosyasi"
-#dizinYolu2= r"/home/neslihan/Masaüstü/ozet1"
-#dizinYolu1 = r"/run/user/1000/gvfs/mtp:host=%5Busb%3A003%2C010%5D/Dahili olarak paylaşılan depolama alanı/system"
-#dizinYolu = r"/run/user/1000/gvfs/mtp:host=%5Busb%3A003%2C004%5D/Dahili olarak paylaşılan depolama alanı/Android/data/com.instagram.android"
-
+ozetYolu2 = r"/home/neslihan/Masaüstü/sozlukdosyasieski"
 baslangicDizinYolu = r"/run/user/1000/gvfs/"
 try:
 	subDirSha1 = str(getDizinYolu(baslangicDizinYolu))
@@ -62,14 +70,24 @@ except Exception as e:
 	print("USB baglantisini kontrol edin !")
 	dizinYolu = ""
 
-if (os.path.isfile(ozetYolu))==False:
-    ozetDosyasi = open(ozetYolu,"a")
-    ozetDosyasi.close()
-print("Basladi")
+print("Özet alma basladi, lütfen usb bağlantısını çıkarmayın..")
 i=0
 try:
+	sozlukYoluYeni,sozlukYoluEski = "",""
+	if(os.path.isfile(ozetYolu2)) == True:
+		sozlukYoluEski = r"/home/neslihan/Masaüstü/sozlukdosyasieski"
+		ozetYolu2 = r"/home/neslihan/Masaüstü/sozlukdosyasiyeni"
+		sozlukYoluYeni = ozetYolu2
+		sozlukdosya = open(ozetYolu2,"w")
+		sozlukdosya.write("{")
+		sozlukdosya.close()
+	else:
+		sozlukdosya = open(ozetYolu2,"a")
+		sozlukdosya.write("{")
+		sozlukdosya.close()
+	j = 0
 	for root, dirs, files in os.walk(dizinYolu, topdown=False):
-		print(i)
+		print(i) # Progres bar gerekiyor
 		i=i+1
 		yazilacak=""
 		for name in files:
@@ -77,21 +95,31 @@ try:
 			try:
 				ozet = getSha1(yol)
 			except Exception as e:
-				print("Bu dosya türü okunamıyor")
 				ozet = "Okunamayan dosya turu"
-			finally:				
-				ozetdosya = open(ozetYolu,"a")
+			finally:
+				kaydedilecekyol = yol[len(dizinYolu):]				
+				sozlukdosya = open(ozetYolu2,"a")
 				dosyaadi = name
-				yazilacak = ""+yol+" ----> "+ozet+"\n"
-				ozetdosya.write(yazilacak)
-				ozetdosya.close()
+				if (j==0):
+					j = j+1
+					sozlukyazilacak = "\""+kaydedilecekyol+"\":\""+ozet+"\"\n"
+				else:
+					sozlukyazilacak = ",\""+kaydedilecekyol+"\":\""+ozet+"\"\n"				
+				sozlukdosya.write(sozlukyazilacak)
+				sozlukdosya.close()
+	
+
 except Exception as e:
-	print(yazilacak)
-	print(yol)
-	print(dosyaadi)
 	print(e)
 finally:
-	print("Bitti..Finally")
+	sozlukdosya = open(ozetYolu2,"a")
+	sozlukdosya.write("}")
+	sozlukdosya.close()
+	print("Ozet Alma İşlemi Bitti..")
+	
+karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni)
 
-print("Bitti..")
-        
+
+
+
+
