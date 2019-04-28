@@ -1,9 +1,11 @@
 from hashlib import sha1
+from datetime import datetime
 import sys
 import os
 import codecs
 import subprocess
 import json
+
 
 def karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni):
 	if(sozlukYoluEski != "" and sozlukYoluYeni != ""):
@@ -57,6 +59,33 @@ def getSha1(filePath):
         return m.hexdigest()
     else:
         print ("File Not Found")
+def sayiyiIkiBasamagaTamamla(sayi):
+	if sayi < 10:
+		sayi = str(sayi)
+		sayi = "0"+sayi
+	return (str)(sayi)
+
+def comparePhoneFile(telefonYolu):
+	telefonDosyaYolu = telefonYolu+r"/sumMyPhone.txt"
+	an = datetime.now()
+	yil = (str)(an.year)
+	ay = sayiyiIkiBasamagaTamamla(an.month)
+	gun = sayiyiIkiBasamagaTamamla(an.day)
+	metin = yil+" / "+ay+" / "+gun
+
+	if os.path.exists(telefonDosyaYolu):
+		with open(telefonDosyaYolu, "r") as dosya:
+			telDosyaIci = (dosya.read())
+		if (telDosyaIci.strip() == metin.strip()):
+			print("Uygulama ile Bilgisayar arası bağlantı sağlandı..")
+			#teldeki dosyayi degistir
+		else:
+			print("Android cihazınızda SumMyPhone uygulaması açık değil.")
+			exit()
+	else:
+		print("Android cihazınızda SumMyPhone uygulaması açık değil.")
+		exit()
+
  
 maindir = os.getcwd() 
 programKlasoruPath = maindir+r"/SumMyPhone" #ozetlerin tutulacagi konum
@@ -69,6 +98,8 @@ ozetYolu2 = programKlasoruPath+r"/sozlukdosyasieski"
 baslangicDizinYolu = r"/run/user/1000/gvfs/" #Linux tabanli bilgisayarlarda usb baglantilari bu dizin altinda gozukuyor
 try:
 	subDirSha1 = str(getDizinYolu(baslangicDizinYolu))
+	comparePhoneFile(subDirSha1)
+	exit() # Burayı kaldırmayı unutma !
 	dizinYolu = subDirSha1+"/Android/data" #Baglanan cihazın Android/data klasorundeki dosyalariyla ilgileniliyor
 	#print("dizinYolu "+dizinYolu)
 except Exception as e:
