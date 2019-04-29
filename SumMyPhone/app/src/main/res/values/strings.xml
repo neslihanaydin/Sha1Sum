@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">SumMyPhone</string>
+
+    <string name="popupmessage">
+
+        <br><b>SumMyPhone uygulamasına hoşgeldiniz.</b>\n</br>
+        <br>Bu uygulama ile telefonunuzdaki dosyaların dönem dönem özetini alarak, telefonunuzdaki değişen dosyaları takip edebilirsiniz.\n</br>
+        <br><b>Uygulamayı çalıştırmak için :</b>\n</br>
+        <br><b>1-</b> Telefonunuzu USB kablosu ile bilgisayarınıza bağladığınızdan emin olun.\n</br>
+        <br><b>2-</b> Ana ekranda gördüğünüz Çalıştır yazan düğmeye basın.\n</br>
+        <br><b>3-</b>Parametreler alınıyor ekranını gördükten sonra bilgisayarınızda <i>python3 sha1ozet.py</i> dosyasını çalıştırın.\n</br>
+        <br><b>4-</b> İşlem süresince USB bağlantısının kopmadığından emin olun.\n</br>
+        <br><b>5-</b> Uygulamayı kapatmayın ve telefonunuzda başka bir işlem yapmayın.\n</br>
+        <br><b>Önemli uyarı:</b>\n</br>
+        Dosyaların özeti güvenlik açısından bilgisayarınızda saklanacaktır. Bu sebeple her seferinde aynı bilgisayarda özet alma işlemine dikkat edin.
+
+    </string>
+</resources>
