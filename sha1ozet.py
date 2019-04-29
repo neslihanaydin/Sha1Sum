@@ -7,18 +7,25 @@ import subprocess
 import json
 
 
-def karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni):
+def karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni,changePhoneFileParam):
 	if(sozlukYoluEski != "" and sozlukYoluYeni != ""):
 		print("-------------Karşılaştırma İşlemi Başlatılıyor------------------")
 		eskiOzetDict = getEskiOzet(sozlukYoluEski)
 		yeniOzetDict = getYeniOzet(sozlukYoluYeni)
+		fileLog = []
 		for key in list(yeniOzetDict.keys()):
 			if key in list(eskiOzetDict.keys()):
 				if eskiOzetDict[key] != yeniOzetDict[key]:
-					print("Bu dosyanın içeriği değişmiş -->"+key)
+					yazdir = "Bu dosyanın içeriği değişmiş -->"+key
+					fileLog.append(yazdir)
+					print(yazdir)
 			else:
-				print("\nYeni eklenen dosya var -->"+key)
+				yazdir = "\nYeni eklenen dosya var -->"+key
+				fileLog.append(yazdir)
+				print(yazdir)
 		print("Karsilastirma işlemi bitti.\n")
+		changePhoneFile(changePhoneFileParam,(str)(fileLog))
+		exit()
 	else:
 		print("Dosya özeti oluşturuldu. Eski dosya özetiyle karşılaştırma yapmak için programı yeniden çalıştırın.")
 def getEskiOzet(eskiSozlukYolu):
@@ -64,6 +71,13 @@ def sayiyiIkiBasamagaTamamla(sayi):
 		sayi = str(sayi)
 		sayi = "0"+sayi
 	return (str)(sayi)
+def changePhoneFile(telefonYolu,veri): 
+	print("changePhoneFile girdim")
+	telefonDosyaYolu = telefonYolu+r"/sumMyPhoneLog.txt"
+	sozlukdosya = open(telefonDosyaYolu,"w") 
+	sozlukdosya.write(veri) 
+	sozlukdosya.close()
+	print("sorunsuz çıktım")
 
 def comparePhoneFile(telefonYolu):
 	telefonDosyaYolu = telefonYolu+r"/sumMyPhone.txt"
@@ -99,7 +113,7 @@ baslangicDizinYolu = r"/run/user/1000/gvfs/" #Linux tabanli bilgisayarlarda usb 
 try:
 	subDirSha1 = str(getDizinYolu(baslangicDizinYolu))
 	comparePhoneFile(subDirSha1)
-	exit() # Burayı kaldırmayı unutma !
+	#exit() # Burayı kaldırmayı unutma !
 	dizinYolu = subDirSha1+"/Android/data" #Baglanan cihazın Android/data klasorundeki dosyalariyla ilgileniliyor
 	#print("dizinYolu "+dizinYolu)
 except Exception as e:
@@ -138,7 +152,6 @@ try:
 			finally:# ne olursa olsun yapilacak islemler
 				kaydedilecekyol = yol[len(dizinYolu):]	#kaydedilecekyol degiskeni dosyanın tam yolunu yazmamak icin kullanilmistir			
 				sozlukdosya = open(ozetYolu2,"a") #her bir dosyanin ozeti buraya yazilacaktir
-				#dosyaadi = name # gerekli mi ?
 				if (j==0):#dictionary yapisi oldugu icin ilk eklemede ',' eklenmemesi lazim. Kontrol yapiliyor
 					j = j+1
 					sozlukyazilacak = "\""+kaydedilecekyol+"\":\""+ozet+"\"\n"
@@ -156,7 +169,7 @@ finally:#butun yazma islemleri bitince dictionary yapisindan dolayi takilar ekle
 	sozlukdosya.close()
 	print("Ozet Alma İşlemi Bitti..")
 	
-karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni) #karsilastirma islemi baslatilir
+karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni,subDirSha1) #karsilastirma islemi baslatilir
 
 
 
