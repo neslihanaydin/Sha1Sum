@@ -14,17 +14,17 @@ def karsilastirmaBaslat(sozlukYoluEski,sozlukYoluYeni,changePhoneFileParam):
 		yeniOzetDict = getYeniOzet(sozlukYoluYeni)
 		fileLog = []
 		for key in list(yeniOzetDict.keys()):
-			if key in list(eskiOzetDict.keys()):
-				if eskiOzetDict[key] != yeniOzetDict[key]:
+			if (key in list(eskiOzetDict.keys())):
+				if (eskiOzetDict[key] != yeniOzetDict[key]):
 					yazdir = "Bu dosyanın içeriği değişmiş -->"+key
-					fileLog.append(yazdir)
+					fileLog.append(str(key))
 					print(yazdir)
 			else:
 				yazdir = "\nYeni eklenen dosya var -->"+key
-				fileLog.append(yazdir)
+				fileLog.append(str(key))
 				print(yazdir)
 		print("Karsilastirma işlemi bitti.\n")
-		changePhoneFile(changePhoneFileParam,(str)(fileLog))
+		changePhoneFile(changePhoneFileParam,fileLog)
 		exit()
 	else:
 		print("Dosya özeti oluşturuldu. Eski dosya özetiyle karşılaştırma yapmak için programı yeniden çalıştırın.")
@@ -53,8 +53,9 @@ def getDizinYolu(baslangicDizinYolu):
 	print("---------------------")
 	baslangicDizinYolu+=tempYol
 	for subdir in os.listdir(baslangicDizinYolu):
-		subDir.append(subdir)
-	dondur = (baslangicDizinYolu+"/"+subDir[1]) # ..
+		if (( "SD" in subdir )==False):
+			subDir.append(subdir)
+			dondur = (baslangicDizinYolu+"/"+subDir[0]) # ..
 	return dondur
 	
 def getSha1(filePath):
@@ -75,7 +76,8 @@ def changePhoneFile(telefonYolu,veri):
 	print("changePhoneFile girdim")
 	telefonDosyaYolu = telefonYolu+r"/sumMyPhoneLog.txt"
 	sozlukdosya = open(telefonDosyaYolu,"w") 
-	sozlukdosya.write(veri) 
+	for satir in veri:
+		sozlukdosya.write(satir+",") 
 	sozlukdosya.close()
 	print("sorunsuz çıktım")
 
@@ -117,7 +119,6 @@ try:
 	dizinYolu = subDirSha1+"/Android/data" #Baglanan cihazın Android/data klasorundeki dosyalariyla ilgileniliyor
 	#print("dizinYolu "+dizinYolu)
 except Exception as e:
-	print(e)
 	print("USB baglantisini kontrol edin !")
 	dizinYolu = ""
 	exit() #usb baglantisi gerceklesmedigi icin uygulama kapatildi.
@@ -143,22 +144,26 @@ try:
 		i=i+1
 		yazilacak=""
 		for name in files:
+			#print("name"+name)
 			yol = os.path.join(root, name) #dosyanin tam yolu alindi
-			try:
-				ozet = getSha1(yol) #dosyanin tam yolu getSha1() fonksiyonuna gonderilerek ozeti alindi
-			except Exception as e: #sha1 kutuphanesinin desteklemedigi turde bir dosya turu var ise exception olusuyor
-				print("Bu dosya okunamıyor") #programin durmaması icin kullaniciya bildiriliyor
-				ozet = "Okunamayan dosya turu" #okunamayan dosya turu de ozet dosyamiza bu sekilde kaydedilecek
-			finally:# ne olursa olsun yapilacak islemler
-				kaydedilecekyol = yol[len(dizinYolu):]	#kaydedilecekyol degiskeni dosyanın tam yolunu yazmamak icin kullanilmistir			
-				sozlukdosya = open(ozetYolu2,"a") #her bir dosyanin ozeti buraya yazilacaktir
-				if (j==0):#dictionary yapisi oldugu icin ilk eklemede ',' eklenmemesi lazim. Kontrol yapiliyor
-					j = j+1
-					sozlukyazilacak = "\""+kaydedilecekyol+"\":\""+ozet+"\"\n"
-				else:
-					sozlukyazilacak = ",\""+kaydedilecekyol+"\":\""+ozet+"\"\n"	#dictionary yapisinda sozlukyazilacak degiskenine yazildi			
-				sozlukdosya.write(sozlukyazilacak)
-				sozlukdosya.close()
+			if (("cache" in str(yol)) == False):
+				try:
+					ozet = getSha1(yol) #dosyanin tam yolu getSha1() fonksiyonuna gonderilerek ozeti alindi
+				except Exception as e: #sha1 kutuphanesinin desteklemedigi turde bir dosya turu var ise exception olusuyor
+					print("Bu dosya okunamıyor") #programin durmaması icin kullaniciya bildiriliyor
+					ozet = "Okunamayan dosya turu" #okunamayan dosya turu de ozet dosyamiza bu sekilde kaydedilecek
+				finally:# ne olursa olsun yapilacak islemler
+					kaydedilecekyol = yol[len(dizinYolu):]	#kaydedilecekyol degiskeni dosyanın tam yolunu yazmamak icin kullanilmistir			
+					sozlukdosya = open(ozetYolu2,"a") #her bir dosyanin ozeti buraya yazilacaktir
+					if (j==0):#dictionary yapisi oldugu icin ilk eklemede ',' eklenmemesi lazim. Kontrol yapiliyor
+						j = j+1
+						sozlukyazilacak = "\""+kaydedilecekyol+"\":\""+ozet+"\"\n"
+					else:
+						sozlukyazilacak = ",\""+kaydedilecekyol+"\":\""+ozet+"\"\n"	#dictionary yapisinda sozlukyazilacak degiskenine yazildi			
+					sozlukdosya.write(sozlukyazilacak)
+					sozlukdosya.close()
+			else:
+				pass
 	
 
 except Exception as e:
